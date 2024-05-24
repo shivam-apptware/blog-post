@@ -1,23 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
-
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./App.css";
+import PostList from "./components/PostList";
+import PostForm from "./components/PostForm";
 function App() {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("https://jsonplaceholder.typicode.com/posts")
+      .then((response) => {
+        setPosts(response.data);
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the posts!", error);
+      });
+  }, []);
+
+  const addPost = (post) => {
+    post.id = posts.length ? Math.max(...posts.map((p) => p.id)) + 1 : 1;
+    setPosts([post, ...posts]);
+  };
+
+  const updatePost = (updatedPost) => {
+    setPosts(
+      posts.map((post) => (post.id === updatedPost.id ? updatedPost : post))
+    );
+  };
+
+  const deletePost = (postId) => {
+    setPosts(posts.filter((post) => post.id !== postId));
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      <h1>Blog Post Application</h1>
+      <PostForm addPost={addPost} />
+      <PostList posts={posts} updatePost={updatePost} deletePost={deletePost} />
     </div>
   );
 }
